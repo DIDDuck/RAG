@@ -1,0 +1,21 @@
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+__pycache__
+
+# venv and .env
+venv
+.env
+
+# Documents
+documents
+
+# ChromaDB
+chroma_db
