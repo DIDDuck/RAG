@@ -1,4 +1,4 @@
-from config import llm_model, embedding_model, db_path, file_path, filename_filter
+from config import llm_model, embeddings_model, db_path, file_path, filename_filter
 import os, math
 from dotenv import load_dotenv
 import ollama, chromadb
@@ -33,7 +33,7 @@ def split_file_to_chunks(file_path):
 
 # Create embeddings Using embedding model: nomic-embed-text. Using Langchain Ollama here.
 embeddings = OllamaEmbeddings(
-    model = embedding_model,
+    model = embeddings_model,
     base_url = os.getenv("LLM_URL")
 )
 
@@ -41,13 +41,11 @@ embeddings = OllamaEmbeddings(
 if os.path.exists(db_path):
     print("Opening existing vectorstore.") 
     chroma_client = chromadb.PersistentClient(path = db_path)
-    collection = chroma_client.get_or_create_collection(
-        name = os.getenv("COLLECTION_NAME")
-    )
     vector_db = Chroma(
         client = chroma_client,
         collection_name = os.getenv("COLLECTION_NAME"),
-        embedding_function = embeddings
+        embedding_function = embeddings,
+        create_collection_if_not_exists = True
     )
     # If documents from current filename don't exist, send chunks to db.
     if len(vector_db.similarity_search(query = file_path, k = 1, filter = {"source": f"{file_path}"})) == 0:
