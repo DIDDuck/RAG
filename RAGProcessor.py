@@ -1,5 +1,5 @@
 import os, chromadb, ollama
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
@@ -22,9 +22,15 @@ class RAGProcessor:
         if not os.path.exists(self.file_path):
             print(f"File \"{self.file_path}\" does not exist.")
             exit()
-        loader = PyPDFLoader(
-            file_path = self.file_path,
+        file_name: str = os.path.split(self.file_path)[1]
+        if not file_name == "" and file_name.endswith(".pdf"):
+            loader = PyPDFLoader(
+                file_path = self.file_path,
             )
+        elif not file_name == "" and file_name.endswith(".txt"):
+            loader = TextLoader(
+                file_path = self.file_path,
+            )  
         pages = loader.load()
 
         # After loading documents, they need to be split into small pieces (chuncks).
@@ -54,14 +60,14 @@ class RAGProcessor:
             # If documents from current filename don't exist, send chunks to db.
             if len(vector_db.similarity_search(query = self.file_path, k = 1, filter = {"source": f"{self.file_path}"})) == 0:
                 print("Saving data to vectorstore, please wait...")
-                chunks = self.split_file_to_chunks(self.file_path)
+                chunks = self.split_file_to_chunks()
                 vector_db.add_documents(documents = chunks)
                 print("Opened existing vectorstore and saved data in it.") 
             else:   
                 print(f"Opened existing vectorstore with existing data from file: {self.file_path}")
         else:   
             print("Creating new vectorstore, please wait... ")
-            chunks = self.split_file_to_chunks(self.file_path)
+            chunks = self.split_file_to_chunks()
             os.mkdir(self.db_path) 
             vector_db = Chroma.from_documents(
                 documents = chunks,
