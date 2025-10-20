@@ -1,4 +1,4 @@
-file_path = "./documents/file2.pdf" # Place your file under documents folder
+file_path = "./documents/file5.txt" # Place your file under documents folder
 llm_model = "gemma3:4b"
 embeddings_model = "nomic-embed-text" # Model needs to be installed in Ollama
 db_path = "./chroma_db"
