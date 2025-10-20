@@ -6,13 +6,14 @@ from langchain_chroma import Chroma
 
 
 class RAGProcessor:
-    def __init__(self, file_path, db_path, llm_model, llm_url, embeddings_model, filename_filter):
+    def __init__(self, file_path, db_path, llm_model, llm_url, embeddings_model, filename_filter, stream):
         self.file_path = file_path
         self.db_path = db_path
         self.llm_model = llm_model
         self.llm_url = llm_url
         self.embeddings_model = embeddings_model
         self.filename_filter = filename_filter
+        self.stream = stream
         # Initialize documents folder
         if not os.path.exists("./documents"): os.mkdir("./documents")
 
@@ -85,7 +86,7 @@ class RAGProcessor:
     
     def retrieve_documents(self, vector_db, query):
         '''User question/query also needs to be converted to embedded form so that it can be searched in vectorstore. Using retriever to get most relevant documents from db.'''
-        retriever = vector_db.as_retriever(search_kwargs = {"k": 10})
+        retriever = vector_db.as_retriever(search_kwargs = {"k": 5})
         retrieved_documents = retriever.invoke(input = query, filter = None if not self.filename_filter else {"source": f"{self.file_path}"})
         return retrieved_documents
 
@@ -117,7 +118,7 @@ class RAGProcessor:
                     "content": query
                 } 
             ],
-            stream = True
+            stream = self.stream
         )
         return response_chat
     

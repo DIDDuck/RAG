@@ -4,12 +4,22 @@
   box-sizing: border-box;
 }
 
-#root {
-  max-width: 768px;
-}
-
 body {
   background-color: #242424;
   color: #dbdbdb;
 } 
 
+#answerDiv ul {
+  list-style-type: disc;
+}
+#answerDiv ol {
+  list-style-type: decimal;
+}
+#answerDiv ul>li {
+  margin-left: 30px;
+}
+#answerDiv ol>li {
+  position: relative;
+  margin-left: 30px;
+  white-space-collapse: collapse ;
+} 

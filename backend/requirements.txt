@@ -21,6 +21,7 @@ distro==1.9.0
 dotenv==0.9.9
 durationpy==0.10
 filelock==3.20.0
+Flask==3.1.2
 flatbuffers==25.9.23
 frozenlist==1.8.0
 fsspec==2025.9.0

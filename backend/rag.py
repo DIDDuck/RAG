@@ -10,7 +10,7 @@ from RAGProcessor import RAGProcessor
 
 load_dotenv()
 
-rag = RAGProcessor(file_path, db_path, llm_model, os.getenv("LLM_URL"), embeddings_model, filename_filter)
+rag = RAGProcessor(file_path, db_path, llm_model, os.getenv("LLM_URL"), embeddings_model, filename_filter, stream = True)
 
 # Split data and send it to vectorstore (db)
 vector_db =  rag.send_data_to_vectorstore()
