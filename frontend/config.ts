@@ -1,12 +1,15 @@
 
 export const development = true;
 export const production = !development;
-export let backendUrl: string;
+export let backendChatUrl: string;
+export let backendFileListUrl: string;
 
 if (development) {
-    backendUrl = "http://127.0.0.1:5000/chat"
+    backendChatUrl = "http://127.0.0.1:5000/chat";
+    backendFileListUrl = "http://127.0.0.1:5000/files";
 }
 
 if (production) {
-    backendUrl = window.location.origin +  "/api/chat"
+    backendChatUrl = window.location.origin +  "/api/chat";
+    backendFileListUrl = window.location.origin + "/api/files"
 } 

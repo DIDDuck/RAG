@@ -8,7 +8,7 @@ body {
   background-color: #242424;
   color: #dbdbdb;
 } 
-
+/* ----- Formatting lists in answer ----- */
 #answerDiv ul {
   list-style-type: disc;
 }
@@ -18,8 +18,21 @@ body {
 #answerDiv ul>li {
   margin-left: 30px;
 }
+#answerDiv ul>li:has(p) {
+  margin-left: 30px;
+  white-space-collapse: collapse ;
+}
+#answerDiv ul>li:has(p)>ul {
+  margin-left: 30px;
+  white-space-collapse: preserve-breaks ;
+}
 #answerDiv ol>li {
   position: relative;
   margin-left: 30px;
   white-space-collapse: collapse ;
 } 
+#answerDiv ol>li:has(p)>ul {
+  margin-left: 30px;
+  white-space-collapse: preserve-breaks ;
+}
+/* -------------------------------------- */

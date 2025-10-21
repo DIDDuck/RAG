@@ -1,6 +1,6 @@
 import "./App.css";
 import { useState } from "react";
-import { backendUrl, development } from "../config.ts";
+import { backendChatUrl, development, backendFileListUrl } from "../config.ts";
 import Markdown from "react-markdown";
 
 const RAGForm = () => {
@@ -24,7 +24,7 @@ const RAGForm = () => {
 		}; 
 
 		try {
-			const response = await fetch(backendUrl, {
+			const response = await fetch(backendChatUrl, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
@@ -49,6 +49,22 @@ const RAGForm = () => {
 		} 
 	};
 
+	const getFileList = async () => {
+		const temp = "test";
+		console.log(temp);
+
+		try {
+			const response = await fetch(backendFileListUrl);
+			if (!response.ok) throw new Error("Bad response from backend.");
+			const data = await response.json();
+			console.log(data.files);
+		} catch(error) {
+			if (development) console.log("Error in getting response from backend:", error);
+			setError("Failed to get response.")
+			setShowError(true);	
+		}
+	};
+
 	return (
 			<div className="mx-auto max-w-2xl p-4 bg-zinc-900 border border-gray-400 rounded">
 				<form onSubmit={sendForm}>
@@ -62,6 +78,8 @@ const RAGForm = () => {
 							value={message}
 							onChange={(e)=> setMessage(e.target.value)}></textarea>
 					</div>
+					<button type="submit" className="block mr-auto mb-3 p-1 px-2 bg-amber-400 text-zinc-950 opacity-75 border border-gray-500 rounded">Send</button>
+					<button type="button" className="block mr-auto mb-3 p-1 px-2 bg-amber-400 text-zinc-950 opacity-75 border border-gray-500 rounded" onClick={() => getFileList()}>Show Files</button>
 					{showAnswer && <div>
 						<p className="mb-1">Answer:</p>
 						<div id="answerDiv" className="mb-2 p-2 w-full border border-gray-400 bg-zinc-800 rounded whitespace-pre-line">
@@ -71,7 +89,7 @@ const RAGForm = () => {
 					{showError && <div className="mb-2 p-2 w-full border border-gray-500 rounded">
 						<p className="text-red-500">{error}</p>
 					</div>}
-					<button type="submit" className="block mr-auto mt-3 p-1 px-2 bg-amber-400 text-zinc-950 opacity-75 border border-gray-500 rounded">Send</button>
+					
 				</form>
 			</div>
 	)

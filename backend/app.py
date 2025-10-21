@@ -6,6 +6,18 @@ from RAGProcessor import RAGProcessor
 
 app = Flask(__name__)
 
+@app.route("/files")
+def list():
+    documents_directory = "./documents"
+    files = os.listdir(documents_directory)
+    
+    res = jsonify({"files": files})
+    res.headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
+    res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
+    res.status_code = 200
+
+    return res
+
 @app.route("/chat", methods = ["POST", "OPTIONS"])
 def answer():
 
@@ -22,10 +34,8 @@ def answer():
         
             print("USER_PROMPT:", user_message)
 
-
-        try:           
-            
-            ################ RUN RAGPROCESSOR CLASS #################################
+        try:            
+            # Use RAGProcessor class to process question (and file).
 
             rag = RAGProcessor(file_path, db_path, llm_model, os.getenv("LLM_URL"), embeddings_model, filename_filter, stream)
 
@@ -47,12 +57,9 @@ def answer():
 
             # Get response
             api_response = rag.send_query(ollama_client, context_from_documents, context_from_notes, query)
-            #rag.show_streaming_response(response)
-
-            #########################################################################
-            
-        except:
-            print("Something failed")
+    
+        except Exception as e:
+            print("Fail:", e)
             res = jsonify({
                 "error": True,
                 "message": message_to_frontend
@@ -64,21 +71,12 @@ def answer():
 
             return res
 
-        # Response from Ollama /api/chat
-        if "error" in api_response:
-            res = jsonify({
-                "error": True,
-                "message": message_to_frontend 
+        print(api_response.message)    
+        res = jsonify({
+            "from": "AI Assistant",
+            "text": api_response["message"]["content"]
             })
-            res.status_code = 500
-            
-        else:
-            print(api_response.message)    
-            res = jsonify({
-                "from": "AI Assistant",
-                "text": api_response["message"]["content"]
-                })
-            res.status_code = 200
+        res.status_code = 200
 
         res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
         res.headers.add("Content-Type", "application/json")
