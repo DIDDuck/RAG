@@ -7,7 +7,11 @@
 body {
   background-color: #242424;
   color: #dbdbdb;
-} 
+}
+
+h1 {
+  font-size: 2em;
+}
 /* ----- Formatting lists in answer ----- */
 #answerDiv ul {
   list-style-type: disc;
