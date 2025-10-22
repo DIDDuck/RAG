@@ -40,3 +40,10 @@ h1 {
   white-space-collapse: preserve-breaks ;
 }
 /* -------------------------------------- */
+input#file::file-selector-button {
+  margin-right: 15px;
+  border: 1px solid #6b7280;
+  border-radius: 0.25em;
+  padding: 4px 8px;
+  background-color: #27272a;
+}

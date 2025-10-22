@@ -21,6 +21,23 @@ def list():
 
     return res
 
+@app.route("/upfile", methods = ["POST", "OPTIONS"])
+def upfile():
+
+    if request.method == "POST":
+        if "file" not in request.files:
+            print("No file in request!")
+        else:
+            file = request.files.get("file")
+            print("FILE:", file)
+
+    res = jsonify({})
+    res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
+    res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
+    res.status_code = 200
+
+    return res
+
 @app.route("/chat", methods = ["POST", "OPTIONS"])
 def answer():
 
