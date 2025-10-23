@@ -77,7 +77,14 @@ const RAGForm = () => {
 		setAnswer("");
 		setShowAnswer(false);
 
-		const file = event.currentTarget.file.files[0] // The only file since input allows only one file.
+		const file = event.currentTarget.file.files[0]; // The only file since input allows only one file.
+		const allowedFileTypes = ["text/plain", "application/pdf"]; 
+
+		if (!file || !allowedFileTypes.includes(file.type)) {
+			setError("Please select a .txt or .pdf file to send.");
+			setShowError(true);
+			return;
+		}
 		const formData = new FormData();
 		formData.append("file", file);
 
@@ -89,6 +96,10 @@ const RAGForm = () => {
 				body: formData
 			})
 			if (!response.ok) {
+				const data = await response.json();
+				if (data.error) {
+					throw new Error(data.message); 
+				}
 				throw new Error("Bad response from backend.");
 			}
 			const data = await response.json();
@@ -103,8 +114,12 @@ const RAGForm = () => {
 			if (development) console.log("Error in getting response from backend:", error);
 			console.log(error);
 			if (error.message === "No files available.") {
-				setError("Upload a file to server.")	
-			} else setError("Failed to get response.")
+				setError("Upload a file to server.");
+			} else if (error.message === "Wrong file type.") {
+				setError("Please select a .txt or .pdf file to send.");
+			} else if (error.message === "No file in request.") {
+				setError("Please select a .txt or .pdf file to send.");	
+			} else setError("Failed to get response.");
 			setShowError(true);
 		} 
 	};
@@ -153,8 +168,12 @@ const RAGForm = () => {
 							type="file" 
 							id="file" 
 							name="file"
-							accept=".pdf, .txt" 
-							onChange={() => {} } />
+							accept=".pdf, .txt"
+							onChange={() => {
+								setError("");
+								setShowError(false);
+							}} 
+						 />
 					</div>
 					<button type="submit" className="block mr-auto mb-3 p-1 px-2 bg-amber-400 text-zinc-950 opacity-75 border border-gray-500 rounded">Send File</button>		
 				</form>

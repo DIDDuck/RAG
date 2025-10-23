@@ -6,6 +6,20 @@ from RAGProcessor import RAGProcessor
 
 app = Flask(__name__)
 
+@app.after_request
+def add_headers(response):
+    if request.path in ["/files", "/upfile"]: 
+        response.headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
+        response.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
+
+    if request.path in ["/chat"]:
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
+        response.headers.add("Content-Type", "application/json")
+        response.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
+
+    return response
+
+
 @app.route("/files")
 def list():
     documents_directory = "./documents"
@@ -15,28 +29,39 @@ def list():
     if not files:
         files = []
     res = jsonify({"files": files})
-    res.headers.add("Access-Control-Allow-Headers", "Access-Control-Allow-Origin")
-    res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
     res.status_code = 200
 
     return res
+
 
 @app.route("/upfile", methods = ["POST", "OPTIONS"])
 def upfile():
 
     if request.method == "POST":
         if "file" not in request.files:
-            print("No file in request!")
+            print("No file in request.")
+            res = jsonify({
+                "error": True,
+                "message": "No file in request."
+            })
+            res.status_code = 400
+            return res
         else:
             file = request.files.get("file")
-            print("FILE:", file)
+            allowed_file_types = ["text/plain", "application/pdf"]
+            if file.content_type not in allowed_file_types:
+                res = jsonify({
+                "error": True,
+                "message": "Wrong file type."
+            })
+                res.status_code = 400
+                return res    
+            print("FILE:", file, file.content_type)
 
     res = jsonify({})
-    res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
-    res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
     res.status_code = 200
-
     return res
+
 
 @app.route("/chat", methods = ["POST", "OPTIONS"])
 def answer():
@@ -59,12 +84,10 @@ def answer():
                     no_files_available = "No files available."
                     raise Exception("No files available.")
                 #messages = request.json["messages"]
-                
-            
                 print("USER_PROMPT:", user_message)
 
                         
-                # Use RAGProcessor class to process question (and file).
+                ### Use RAGProcessor class to process question (and file).
 
                 rag = RAGProcessor(file_path, db_path, llm_model, os.getenv("LLM_URL"), embeddings_model, filename_filter, stream)
 
@@ -93,9 +116,6 @@ def answer():
                     "error": True,
                     "message": no_files_available if no_files_available else error_message_to_frontend
                 })
-                res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
-                res.headers.add("Content-Type", "application/json")
-                res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
                 res.status_code = 200
 
                 return res
@@ -107,19 +127,12 @@ def answer():
             })
         res.status_code = 200
 
-        res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
-        res.headers.add("Content-Type", "application/json")
-        res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
         return res 
 
 
     if request.method == "OPTIONS":
 
         res = jsonify({}) # dummy payload 
-        
-        res.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
-        res.headers.add("Content-Type", "application/json")
-        res.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
         res.status_code = 200
 
         return res
