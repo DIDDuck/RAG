@@ -15,4 +15,6 @@ if (production) {
     backendChatUrl = window.location.origin +  "/api/chat";
     backendFileListUrl = window.location.origin + "/api/files"
     backendUploadFileUrl = window.location.origin + "/api/upfile"
-} 
+}
+
+export const stream = true;

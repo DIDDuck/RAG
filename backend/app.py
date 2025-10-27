@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, Response, stream_with_context
 import os, config
 import requests
-from config import llm_model, embeddings_model, db_path, file_path, filename_filter, stream
+from config import llm_model, embeddings_model, db_path, filename_filter, stream
 from RAGProcessor import RAGProcessor
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ def add_headers(response):
 
     if request.path in ["/chat"]:
         response.headers.add("Access-Control-Allow-Headers", "Content-Type,Access-Control-Allow-Origin")
-        response.headers.add("Content-Type", "application/json")
+        if not stream: response.headers.add("Content-Type", "application/json")
         response.headers.add("Access-Control-Allow-Origin", config.allowed_origin)
 
     return response
@@ -78,6 +78,7 @@ def answer():
                 error_message_to_frontend = "Failed to get an answer from AI."
                 user_message = request.json["message"]
                 user_file = request.json["file"]
+                stream = request.json["stream"] # Server sets default to False, use client choice
                 if not user_file == None:
                     file_path = os.path.join("./documents", user_file) # override the one from config.py with one that user selects in UI.
                 else:
@@ -109,6 +110,7 @@ def answer():
 
                 # Get response
                 api_response = rag.send_query(ollama_client, context_from_documents, context_from_notes, query)
+                #rag.show_streaming_response(api_response)
         
             except Exception as e:
                 print("Fail:", e)
@@ -120,12 +122,19 @@ def answer():
 
                 return res
 
-        print(api_response.message)    
-        res = jsonify({
-            "from": "AI Assistant",
-            "text": api_response["message"]["content"]
-            })
-        res.status_code = 200
+        if stream == True:
+            def generate():
+                for part in api_response:
+                    #print(part["message"]["content"])
+                    yield part["message"]["content"]
+            res = Response(generate(), content_type = "text/plain")
+
+        else:    
+            res = jsonify({
+                "from": "AI Assistant",
+                "text": api_response["message"]["content"]
+                })
+            res.status_code = 200
 
         return res 
 

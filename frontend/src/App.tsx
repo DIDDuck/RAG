@@ -1,6 +1,6 @@
 import "./App.css";
 import { useEffect, useState } from "react";
-import { backendChatUrl, development, backendFileListUrl, backendUploadFileUrl } from "../config.ts";
+import { backendChatUrl, development, backendFileListUrl, backendUploadFileUrl, stream } from "../config.ts";
 import Markdown from "react-markdown";
 
 const RAGForm = () => {
@@ -23,7 +23,8 @@ const RAGForm = () => {
 
 		const sendData = {
 			message: event.currentTarget.message.value,
-			file: !event.currentTarget.file ? null : event.currentTarget.file.value
+			file: !event.currentTarget.file ? null : event.currentTarget.file.value,
+			stream: stream
 		}; 
 
 		try {
@@ -37,14 +38,29 @@ const RAGForm = () => {
 			if (!response.ok) {
 				throw new Error("Bad response from backend.");
 			}
-			const data = await response.json();
-			if (data.error) {
-				throw new Error(data.message);
-			} else {
-				setAnswer(data.text);
+			// Streaming response from backend			
+			if (stream) {
+				const reader = response.body!.getReader();
+				let newAnswer = ""
 				setShowAnswer(true);
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break; // If stream ended, stop waiting for messages
+					const message = new TextDecoder().decode(value);
+					newAnswer = newAnswer + message;
+					setAnswer(newAnswer);
+				}
+			} else {
+				// One piece answer from backend
+				const data = await response.json();
+				if (data.error) {
+					throw new Error(data.message);
+				} else {
+					setAnswer(data.text);
+					setShowAnswer(true);
+				}
 			} 
-			
+	
 		} catch(error: any) {
 			if (development) console.log("Error in getting response from backend:", error);
 			console.log(error);
