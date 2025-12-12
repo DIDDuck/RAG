@@ -35,7 +35,7 @@ class RAGProcessor:
         pages = loader.load()
 
         # After loading documents, they need to be split into small pieces (chuncks).
-        splitter = RecursiveCharacterTextSplitter(chunk_size = 1000, chunk_overlap = 100)
+        splitter = RecursiveCharacterTextSplitter(chunk_size = 500, chunk_overlap = 100)
         chunks = splitter.split_documents(pages)
 
         return chunks
@@ -111,11 +111,11 @@ class RAGProcessor:
             messages = [
                 {
                     "role": "system",
-                    "content": notes_for_context + documents_for_context + "Use ONLY this information and base your answer on it."
+                    "content": notes_for_context
                 },
                 {
                     "role": "user",
-                    "content": query
+                    "content": documents_for_context + "\n\n" + "Question: " + query
                 } 
             ],
             stream = self.stream
